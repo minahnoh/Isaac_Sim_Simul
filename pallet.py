@@ -4,15 +4,16 @@ from pxr import Gf, UsdGeom
 import omni.usd
 
 class Pallet:
-    def __init__(self, prim_path: str):
+    def __init__(self, prim_path: str, id_pallet):
         """
         물리 팔레트 생성 (Prim의 실제 위치 사용)
 
         Args:
             prim_path: USD Stage 상의 경로
-            size: 크기 (x, y, z)
+            id_pallet : Unique identifier for the pallet
         """
         self.prim_path = prim_path
+        self.id_pallet = id_pallet
 
         # 현재 Stage에서 prim 참조
         self.stage = omni.usd.get_context().get_stage()
