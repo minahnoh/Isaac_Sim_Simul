@@ -27,7 +27,6 @@ class Printer:
         self.busy = False  # 작동 중 여부
 
     async def run_cycle(self, world, logger: SimLogger):
-        """AGV가 input_pos에 pallet을 놓아두면 실행됨"""
         if self.current_pallet is None:
             return
 
