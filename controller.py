@@ -1,7 +1,7 @@
 # controller.py
 import math
 from logger_sim import SimLogger
-from config_sim import PALLET_CAPACITY, STACKER1_POS, STACKER2_POS, PRINTER1_INPUT_POS, PRINTER1_OUTPUT_POS, PRINTER2_INPUT_POS, PRINTER2_OUTPUT_POS, AGV_HOME_POS
+from config_sim import PALLET_CAPACITY, STACKER1_POS, STACKER2_POS, PRINTER1_OUTPUT_POS, PRINTER2_OUTPUT_POS, AGV_HOME_POS
 from pallet import Pallet
 from stacker import Stacker
 from printer import Printer
@@ -14,37 +14,19 @@ class CellController:
         self.logger = SimLogger(world)
 
         # 자산 생성
-        self.agv = AGV("/World/AGV", AGV_HOME_POS)
-        self.stacker1 = Stacker("/World/Stacker01", STACKER1_POS)
-        self.stacker2 = Stacker("/World/Stacker02", STACKER2_POS)
-        self.printer1 = Printer("/World/Printer01", PRINTER1_INPUT_POS, PRINTER1_OUTPUT_POS)
-        self.printer2 = Printer("/World/Printer02", PRINTER2_INPUT_POS, PRINTER2_OUTPUT_POS)
+        self.agv = AGV("/World/AGV___MaxMover__Fork_Over_Leg")
+        self.stacker1 = Stacker("/World/Rack___lowpoly_gameready_01")
+        self.stacker2 = Stacker("/World/Rack___lowpoly_gameready_02")
+        self.printer1 = Printer("/World/_D_Printer_01")
+        self.printer2 = Printer("/World/_D_Printer_02")
 
         self.pallet_id_counter = 1
 
-    def _new_pallet(self, pos: Gf.Vec3d, items: int) -> Pallet:
-        p = Pallet(f"/World/Pallet_{self.pallet_id_counter:03d}", pos, items=items)
+    # 팔렛트 생성
+    def _new_pallet(self, pos: Gf.Vec3d) -> Pallet:
+        p = Pallet(f"/World/Pallet_{self.pallet_id_counter:03d}", pos)
         self.pallet_id_counter += 1
         return p
-
-    def plan_pallets_for_order(self, total_items: int):
-        """주문 아이템 수 → 팔레트 수 및 각 팔레트 적재량 분배"""
-        pallets = []
-        n = math.ceil(total_items / PALLET_CAPACITY)
-        remain = total_items
-        for i in range(n):
-            take = min(PALLET_CAPACITY, remain)
-            pos = STACKER1_POS if i % 2 == 0 else STACKER2_POS
-            p = self._new_pallet(pos, take)
-            pallets.append(p)
-            # 스태커에 적재
-            if i % 2 == 0:
-                self.stacker1.push(p)
-            else:
-                self.stacker2.push(p)
-            remain -= take
-        self.logger.info(f"주문 분해 → 팔레트 {len(pallets)}개 생성 (총 {total_items} 아이템)")
-        return pallets
 
     async def _feed_printer_if_available(self, printer, stacker):
         """프린터가 비어있고 스태커에 팔레트가 있으면 하나 공급"""

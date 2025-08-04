@@ -1,4 +1,3 @@
-# main.py
 import asyncio
 from omni.isaac.kit import SimulationApp
 # Isaac Sim 실행 (필요 시 headless=True)

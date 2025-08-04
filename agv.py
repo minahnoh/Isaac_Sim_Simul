@@ -1,14 +1,13 @@
-# agv.py
 import asyncio
 import omni.usd
 from pxr import Gf, UsdGeom
-from omni.isaac.core.prims import RigidPrim
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.utils.prims import get_prim_at_path
+from omni.isaac.core.prims import RigidPrim # RigidPrim: Isaac Sim에서 물리기반 오브젝트(Rigid Body)를 제어하기 위한 도우미 클래스
+from omni.isaac.core.utils.stage import get_current_stage # 현재 USD Stage를 갖고옴
+from omni.isaac.core.utils.prims import get_prim_at_path  # 특정 경로에 있는 Prim(객체)를 갖고옴
 
 
 class AGV:
-    def __init__(self, prim_path: str, max_speed: float = 100.0, stop_distance: float = 1.0):
+    def __init__(self, prim_path: str, max_speed: float = 100.0, stop_distance: float = 1.0): 
         """
         물리 기반 AGV 생성자
 
@@ -20,10 +19,10 @@ class AGV:
         self.prim_path = prim_path
         self.stage = get_current_stage()
         self.prim = get_prim_at_path(self.prim_path)
-        self.body = RigidPrim(prim_path=self.prim_path)
+        self.body = RigidPrim(prim_paths_expr=self.prim_path) # RigidPrim 객체를 생성해서 해당 AGV에 물리엔진 기능 부여
         self.max_speed = max_speed
         self.stop_distance = stop_distance
-        self.carrying = None
+        self.carrying = None # AGV가 팔레트를 들고 있을 경우 어떤 팔레트를 들고 있는지
 
     def get_position(self):
         """현재 AGV의 월드 위치 반환"""
@@ -33,9 +32,9 @@ class AGV:
 
     def stop(self):
         """AGV 멈춤"""
-        self.body.set_linear_velocity(Gf.Vec3f(0, 0, 0))
+        self.body.set_linear_velocity(Gf.Vec3f(0, 0, 0)) # 현재 속도를 (0,0,0)으로 설정해서 이동 정지, set_linear_velocity(): 여러 개의 물리 객체(prim)의 속도를 한꺼번에 제어할때 사용하는 함수
 
-    async def move_to(self, target_pos: Gf.Vec3f):
+    async def move_to(self, target_pos: Gf.Vec3f): # async을 통해 agv를 비동기적으로 움직임
         """
         물리 기반 이동 - 목표 위치까지 속도 적용
 
@@ -57,8 +56,8 @@ class AGV:
                 reached = True
                 break
 
-            velocity = direction.GetNormalized() * self.max_speed
-            self.body.set_linear_velocity(velocity)
+            velocity = direction.GetNormalized() * self.max_speed # 목표 방향으로 속도 벡터 계산(정규화된 방향 * 속도)
+            self.body.set_linear_velocity(velocity) # 물리 객체에 적용
             await asyncio.sleep(update_dt)
 
     def pickup(self, pallet):
