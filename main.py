@@ -1,21 +1,18 @@
 import asyncio
-from omni.isaac.kit import SimulationApp
+from isaacsim.simulation_app import SimulationApp
+from isaacsim.core.api import World
+from workflow import Workflow
+from logger_sim import SimLogger
+from config_isaac import *
+
 # Isaac Sim 실행 (필요 시 headless=True)
 simulation_app = SimulationApp({"headless": False})
-
-from omni.isaac.core import World
-from omni.isaac.core.utils.stage import add_reference_to_stage
-from omni.isaac.core.utils.nucleus import get_assets_root_path
-
-from controller import CellController
-from logger_sim import SimLogger
-from config_sim import SIM_DT
 
 class WorldWrapper:
     """World + 편의 async 유틸리티"""
     def __init__(self):
         self.world = World(stage_units_in_meters=1.0, physics_dt=SIM_DT, rendering_dt=SIM_DT)
-        self.world.scene.add_default_ground_plane()
+        self.world.scene.add_ground_plane()
 
         # Isaac Sim의 Task 스케줄용 컨테이너
         self._tasks = []
@@ -45,11 +42,11 @@ async def main_async():
     logger = SimLogger(w)
 
     # 셀 컨트롤러 구성
-    cell = CellController(w)
+    cell = Workflow(w)
 
     # 예시: 주문 총 아이템 수 (나중에 SimPy 연동 시 여기로 전달)
     total_items = 180  # → 팔레트 4개 (50,50,50,30)
-    await cell.run_order_flow(total_items)
+    await cell.run_factory()
 
     logger.info("시뮬레이션 종료 대기(2s)")
     await w.pause_and_wait(2.0)

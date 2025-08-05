@@ -1,7 +1,8 @@
-from omni.isaac.core.objects import FixedCuboid
+from isaacsim.core.api.objects import FixedCuboid
 from pxr import Gf, UsdGeom
 import omni.usd
-from config_sim import PRINTER_LOAD_TIME, PRINTER_BUILD_TIME, PRINTER_UNLOAD_TIME
+from config_isaac import *
+from usd_utils import *
 from logger_sim import SimLogger
 import asyncio
 from pallet import Pallet
@@ -23,11 +24,7 @@ class Printer:
         self.state = 'idle' # state: 'idle', 'working', 'error'
         self.current_pallet = None  # 현재 프린터에 놓인 팔레트
         
-        stage = omni.usd.get_context().get_stage()
-        prim = stage.GetPrimAtPath(prim_path)
-        xform = UsdGeom.Xformable(prim)
-        matrix = xform.ComputeLocalToWorldTransform(0)
-        position = Gf.Vec3f(matrix.ExtractTranslation())
+        position = convert_path_to_position(self.prim_path)
         
         # 프린터 본체는 고정형으로 생성
         self.node = FixedCuboid(

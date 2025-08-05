@@ -4,6 +4,9 @@ from pxr import Gf, UsdGeom
 from omni.isaac.core.prims import RigidPrim # RigidPrim: Isaac Sim에서 물리기반 오브젝트(Rigid Body)를 제어하기 위한 도우미 클래스
 from omni.isaac.core.utils.stage import get_current_stage # 현재 USD Stage를 갖고옴
 from omni.isaac.core.utils.prims import get_prim_at_path  # 특정 경로에 있는 Prim(객체)를 갖고옴
+from printer import Printer
+from stacker import Stacker
+from config_isaac import *
 
 
 class AGV:
@@ -63,10 +66,50 @@ class AGV:
     def pickup(self, pallet):
         """팔레트 연결"""
         self.carrying = pallet
-        print(f"[AGV] 팔레트 {pallet.prim_path} 집어올림 (추후 joint 연결 가능)")
+        print(f"[AGV] 팔레트 {pallet.id} 집어올림 ")
 
-    def drop(self, stacker):
+    def drop(self, pallet):
         """팔레트 해제"""
         if self.carrying:
-            print(f"[AGV] 팔레트 {self.carrying.prim_path} 내려놓음")
+            print(f"[AGV] 팔레트 {pallet.id} 내려놓음")
             self.carrying = None
+
+    async def pickup_from_stacker(self, stacker: Stacker):
+        """stacker로부터 pallet을 들어 올림"""
+        pallet = stacker.empty_slot()
+        if pallet is None:
+            return None
+        await self.move_to(stacker.position)
+        await asyncio.sleep(AGV_PICK_DROP_TIME)
+        self.pickup(pallet)
+        print(f"[AGV] Stacker{stacker.id_stacker}에서 Pallet{pallet.id}를 꺼냄")
+        return pallet
+
+    async def drop_to_stacker(self, stacker: Stacker):
+        if self.carrying is None:
+            return False
+        await self.move_to(stacker.position)
+        await asyncio.sleep(AGV_PICK_DROP_TIME)
+        stacker.fill_slot_with_pallet(self.carrying)
+        self.drop(self.carrying)
+        print(f"[AGV] Stacker {stacker.id_stacker}에 Pallet {self.carrying.id} 드롭 완료")
+        return True
+
+    async def pickup_from_printer(self, printer: Printer):
+        if printer.current_pallet is None or printer.state == 'working':
+            return None
+        pallet = printer.current_pallet
+        await self.move_to(printer.node.get_world_pose()[0])
+        await asyncio.sleep(AGV_PICK_DROP_TIME)
+        self.pickup(pallet)
+        printer.current_pallet = None
+        return pallet
+
+    async def drop_to_printer(self, printer: Printer):
+        if self.carrying is None or not printer.ready_for_input():
+            return False
+        await self.move_to(printer.node.get_world_pose()[0])
+        await asyncio.sleep(AGV_PICK_DROP_TIME)
+        printer.current_pallet = self.carrying
+        self.drop(self.carrying)
+        return True

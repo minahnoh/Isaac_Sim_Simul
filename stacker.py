@@ -1,5 +1,8 @@
-from omni.isaac.core.objects import FixedCuboid
-from omni.isaac.core.materials import PhysicsMaterial
+import sys
+import os
+from isaacsim.core.api.objects import FixedCuboid
+from isaacsim.core.api.materials import PhysicsMaterial
+from usd_utils import convert_path_to_position
 from pxr import Gf, UsdGeom
 import omni.usd
 
@@ -17,16 +20,11 @@ class Stacker:
         self.id_stacker = id_stacker
         self.slots = [] # 팔레트를 저장
 
-        # Stage에서 prim 위치 가져오기
-        self.stage = omni.usd.get_context().get_stage()
-        self.prim = self.stage.GetPrimAtPath(self.prim_path)
-
-        xform = UsdGeom.Xformable(self.prim)
-        matrix = xform.ComputeLocalToWorldTransform(0)
-        self.position = Gf.Vec3f(matrix.ExtractTranslation())
+        # prim_path를 위치벡터로 변환
+        self.position = convert_path_to_position(self.prim_path)
 
         # 고정형 물리 바닥 생성
-        self.material = PhysicsMaterial(static_friction=1.2, dynamic_friction=0.9, restitution=0.0)
+        self.material = PhysicsMaterial(prim_path = self.prim_path, static_friction=1.2, dynamic_friction=0.9, restitution=0.0)
 
         self.body = FixedCuboid(
             prim_path=self.prim_path,
@@ -36,11 +34,12 @@ class Stacker:
 
     def fill_slot_with_pallet(self, pallet):
         self.slots.append(pallet)
-        print(f"Stacker {self.id} 팔레트 {pallet.id} 보관")
+        print(f"Stacker {self.id} 팔레트 {pallet.id_pallet} 보관")
 
     def empty_slot(self):
         if self.slots:
             pallet = self.slots.pop(0)
-            print(f"Stacker {self.id} 팔레트 {pallet.id} 반환")
+            print(f"Stacker {self.id} 팔레트 {pallet.id_pallet} 반환")
             return pallet
+        print(f"Stacker {self.id} 비어 있음: 반환할 팔레트가 없습니다.")
         return None

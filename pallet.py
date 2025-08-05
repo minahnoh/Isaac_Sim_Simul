@@ -1,7 +1,8 @@
-from omni.isaac.core.objects import DynamicCuboid
-from omni.isaac.core.materials import PhysicsMaterial
+from isaacsim.core.api.objects import DynamicCuboid
+from isaacsim.core.api.materials import PhysicsMaterial
 from pxr import Gf, UsdGeom
 import omni.usd
+from usd_utils import convert_path_to_position
 
 class Pallet:
     def __init__(self, prim_path: str, id_pallet):
@@ -10,22 +11,16 @@ class Pallet:
 
         Args:
             prim_path: USD Stage 상의 경로
-            id_pallet : Unique identifier for the pallet
+            id_pallet : Unique identifier afor the pallet
         """
         self.prim_path = prim_path
         self.id_pallet = id_pallet
 
         # 현재 Stage에서 prim 참조
-        self.stage = omni.usd.get_context().get_stage()
-        self.prim = self.stage.GetPrimAtPath(self.prim_path)
-
-        # 위치는 Prim에서 직접 가져옴
-        xform = UsdGeom.Xformable(self.prim)
-        matrix = xform.ComputeLocalToWorldTransform(0)
-        self.position = Gf.Vec3f(matrix.ExtractTranslation())
+        self.position = convert_path_to_position(self.prim_path)
 
         # 물리 재질 생성 및 적용
-        self.material = PhysicsMaterial(static_friction=1.0, dynamic_friction=0.8, restitution=0.1)
+        self.material = PhysicsMaterial(prim_path = self.prim_path, static_friction=1.0, dynamic_friction=0.8, restitution=0.1)
 
         # 팔레트 물리 설정
         self.cuboid = DynamicCuboid(
