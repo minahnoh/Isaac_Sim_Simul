@@ -1,0 +1,6 @@
+{
+    "terminal.integrated.env.windows": {
+        "PATH": "${env:PATH};C:\\isaacsim\\kit\\python\\bin"
+    },
+    "python.defaultInterpreterPath": "C:\\isaacsim\\kit\\python\\bin\\python.exe"
+}

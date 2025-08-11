@@ -1,0 +1,9 @@
+[package]
+title = "Mina 3D Printing Farm"
+version = "0.1.0"
+description = "AGV/Printer/Stacker/Pallet modules + workflow runner"
+authors = ["Your Name"]
+
+# 이 확장에서 외부로 공개할 파이썬 패키지
+[[python.module]]
+name = "Isaac_simul"

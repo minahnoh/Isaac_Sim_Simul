@@ -4,9 +4,9 @@ from pxr import Gf, UsdGeom
 from omni.isaac.core.prims import RigidPrim # RigidPrim: Isaac Sim에서 물리기반 오브젝트(Rigid Body)를 제어하기 위한 도우미 클래스
 from omni.isaac.core.utils.stage import get_current_stage # 현재 USD Stage를 갖고옴
 from omni.isaac.core.utils.prims import get_prim_at_path  # 특정 경로에 있는 Prim(객체)를 갖고옴
-from printer import Printer
-from stacker import Stacker
-from config_isaac import *
+from Isaac_simul.printer import Printer
+from Isaac_simul.stacker import Stacker
+from Isaac_simul.config_isaac import *
 
 
 class AGV:
@@ -113,3 +113,4 @@ class AGV:
         printer.current_pallet = self.carrying
         self.drop(self.carrying)
         return True
+    

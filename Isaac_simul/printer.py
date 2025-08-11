@@ -1,11 +1,11 @@
-from isaacsim.core.api.objects import FixedCuboid
+from omni.isaac.core.objects import FixedCuboid
 from pxr import Gf, UsdGeom
 import omni.usd
-from config_isaac import *
-from usd_utils import *
-from logger_sim import SimLogger
+from Isaac_simul.config_isaac import *
+from Isaac_simul.usd_utils import *
+from Isaac_simul.logger_sim import SimLogger
 import asyncio
-from pallet import Pallet
+from Isaac_simul.pallet import Pallet
 
 class Printer:
     """
